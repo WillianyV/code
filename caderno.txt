@@ -1,0 +1,151 @@
+senha herculano pc - alpha
+
+PHP
+Rotas
+>o arquivo web é PHP serve para registrar as rotas que trabalharam no velho web ou seja processando páginas do lado do banco servindo essas páginas em resposta às requisições permitindo inclusive a utilização de recursos como o Cockies e sessões
+(web tradicional)
+
+>API serve para registrar os dados de uma API. as APIs elas possuem o propósito de responder dados as requisições que são feitas. web e mobile.
+>channels brodther cast, web sockts
+>console criaçãod e comandos personalizados, implementados pelo artisan
+
+> o objeto Route, vai administrar nossas rotas
+> verbo http - controlar as requisições
+get - 
+post 
+put
+patch
+delete
+options
+>
+php artisan list - listar os comando do artisan
+>
+php artisan make:controller nome do controller
+os metodos dentro do controlador são chamados de actions
+
+>
+A função echo é a instrução que envia para a saída qualquer informação, podendo conter texto, números ou variáveis.
+
+>
+//parametros obrigatorios {exemplo}
+//paramentros opcionais {exemplo?}
+//ele tem uma limitação nas rotas op, se todos os paramentros estiverem op
+//vc so pode passar opcionamente da direita para esquerda
+/*
+Route::get('/contato/{nome?}/{categoria?}/{assunto?}/{mensagem?}', 
+    function(
+        String $nome = 'nome não informado', 
+        String $categoria = 'categoria não informada', 
+        String $assunto = 'assunto não informado', 
+        String $msg = 'Mensagem não informada'){
+    echo 'estamos aqui:'.$nome.' - '.$categoria.' - '.$assunto.' - '.$msg;
+});
+
+Route::get('/contato/{nome}/{categoria_id}', 
+    function(
+        String $nome = 'nome não informado', 
+        int $categoria_id = 1){
+    echo "estamos aqui: $nome - $categoria_id";
+})->where('nome','[A-Za-z]+')->where('categoria_id','[0-9]+'); //tratamento de paramentros para dizer que os paramentos so podem receber determidados tipos de dados
+
+*/
+
+>
+Route list
+
+é utilizado para listar todas as rotas criadas no sistema, é bom caso esqueceu de colocar alguma no route
+
+>rotas agrupadas
+são utilizadas para serpar 'as telas', por exemplo o cliente pode ver uma parte, poré não pode acessar outras coidas do sistema pois, para ter acesso é precis logar (adm).
+
+>Rotas nomeadas são apelidos utilizados no cofigo
+mas não aparecem para o usuario
+
+/* 
+//redirecinamento de rotas
+Route::get('/rota1', function(){echo 'rota 1';})->name('site.rota1');
+//mais usual
+Route::get('/rota2', function(){
+    return redirect()->route('site.rota1');
+})->name('site.rota2');
+//não é usual:
+//Route::redirect('/rota2','rota1');
+*/
+
+>Rota de fallback é uma rota de contigencia
+ou seja quando o usuario quer acessar uma rota que não existe ele será redirecionado a rota de contigencia (evitar erro 404)
+
+
+BLADE(view)
+
+{{-- cometarios que não aparecem na pagina --}}
+
+{{-- 
+@php
+    // PHP PURO / if
+    if(){
+
+    }elseif(){
+
+    }else{
+
+    }
+@endphp
+--}}
+
+{{-- add um array no laravel
+@dd($fornecedores)
+
+--}}
+
+{{-- no blade não precisamos colocar ; no final--}}
+
+
+
+{{--  IF NO BLADE/LARAVEL--}}
+{{-- 
+@if(count($fornecedores)>0 && count($fornecedores)<5)
+    <h3>Alguns fornecedores</h3>
+@elseif(count($fornecedores)>5)
+    <h3>Mais de 5 fornecedores</h3>
+@else
+    <h3>Não tem foornecedores cadastrados</h3>
+@endif    
+--}}
+
+Fornecedor: {{ $fornecedores[0]['nome']}} <br/>
+Status:{{ $fornecedores[0]['status']}} <br/>
+
+@if (!($fornecedores[0]['status'] == 'S'))
+    <h3>fornecedor inativo</h3>    
+@endif
+
+{{-- O UNLASS FAZ A MESMA COISA DO ! NEGAÇÃO--}}
+@unless ($fornecedores[0]['status'] == 'S')
+    <h3>fornecedor inativo</h3>
+@endunless
+
+{{-- testa se a variavel existe antes de utiliza-la --}}
+@isset($fornecedores)
+    Fornecedor: {{ $fornecedores[0]['nome']}} <br/>
+    Status:{{ $fornecedores[0]['status']}} <br/>  
+    @isset($fornecedores[0]['CNPJ'])
+        CNPJ: {{$fornecedores[0]['CNPJ']}}
+    @endisset
+@endisset
+
+{{-- testar se o campo está vazio
+
+    @isset($fornecedores[1]['CNPJ'])
+        CNPJ: {{$fornecedores[1]['CNPJ']}}
+        
+        @empty($fornecedores[1]['CNPJ'])
+         - vazio
+        @endempty
+               
+    @endisset
+
+porém a melhor fomar é o if ternario (codigo)
+CNPJ: {{$fornecedores[1]['CNPJ'] ?? 'Dado não preenchido'}} 
+    --}} 
+
