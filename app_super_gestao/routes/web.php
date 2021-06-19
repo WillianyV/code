@@ -4,7 +4,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [\App\Http\Controllers\PrincipalController::class,'principal'])->name('site.index');
 Route::get('/sobrenos',[\App\Http\Controllers\SobrenosController::class,'exibirMsg'])->name('site.sobrenos');
+
+//rotas de contato
 Route::get('/contato',[\App\Http\Controllers\ContatoController::class,'exibirMsg'])->name('site.contato');
+Route::post('/contato',[\App\Http\Controllers\ContatoController::class,'exibirMsg'])->name('site.contato');
+//fim rotas contato
 
 Route::prefix('/app')->group(function(){
     Route::get('/login',function(){ return 'LOGIN';})->name('app.login');
