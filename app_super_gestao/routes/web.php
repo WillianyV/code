@@ -2,23 +2,35 @@
 
 use Illuminate\Support\Facades\Route;
 
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| contains the "web" middleware group. Now create something great!
+|
+*/
+/*
+Route::get('/', function () {
+    return 'Olá, seja bem vindo ao curso!';
+});
+*/
+
 Route::get('/', [\App\Http\Controllers\PrincipalController::class,'principal'])->name('site.index');
-Route::get('/sobrenos',[\App\Http\Controllers\SobrenosController::class,'exibirMsg'])->name('site.sobrenos');
+Route::get('/sobrenos',[\App\Http\Controllers\SobrenosController::class,'sobreNos'])->name('site.sobrenos');
 
 //rotas de contato
-Route::get('/contato',[\App\Http\Controllers\ContatoController::class,'exibirMsg'])->name('site.contato');
-Route::post('/contato',[\App\Http\Controllers\ContatoController::class,'exibirMsg'])->name('site.contato');
+Route::get('/contato',[\App\Http\Controllers\ContatoController::class,'contato'])->name('site.contato');
+Route::post('/contato',[\App\Http\Controllers\ContatoController::class,'contato'])->name('site.contato');
 //fim rotas contato
 
-Route::prefix('/app')->group(function(){
-    Route::get('/login',function(){ return 'LOGIN';})->name('app.login');
-    Route::get('/clientes',function(){ return 'CLIENTES';})->name('app.clientes');
+
+Route::get('/login',function(){ return 'Login';})->name('app.login');
+
+Route::prefix('/app')->group(function(){    
+    Route::get('/clientes',function(){ return 'Clientes';})->name('app.clientes');
     Route::get('/fornecedores',[\App\Http\Controllers\FornecedoresController::class,'index'])->name('site.fornecedores');
-    Route::get('/produtos',function(){ return 'PRODUTOS';})->name('app.protudos');
-});
-
-Route::get('/teste/{p1}/{p2}',[\App\Http\Controllers\TesteController::class,'teste'])->name('site.teste');
-
-Route::fallback(function(){
-    echo 'A página acessada não existe, <a href="'.route('site.index').'">Clique aqui</a> para voltar a pagina inicial.';
+    Route::get('/produtos',function(){ return 'produtos';})->name('app.protudos');
 });
