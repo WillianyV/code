@@ -149,4 +149,9 @@ Status:{{ $fornecedores[0]['status']}} <br/>
 porém a melhor fomar é o if ternario (codigo)
 CNPJ: {{$fornecedores[1]['CNPJ'] ?? 'Dado não preenchido'}} 
     --}} 
-
+-----------------------------------------------------------
+SofhDelete é utilizado para 'deletar' registro, sem relamente apagar os arquivos. ! Apaga sem apagar
+o forceDelete remove de verdade
+para listar os registro removidos(SofhDelete) utiliza com ::withTrashed();
+ex.: Fornecedores::withTrashed()->get(); //lista todos inlsuive os apagados
+Fornecedores::onlyTrashed()->get();//lista só os apagados
