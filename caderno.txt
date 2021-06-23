@@ -155,3 +155,24 @@ o forceDelete remove de verdade
 para listar os registro removidos(SofhDelete) utiliza com ::withTrashed();
 ex.: Fornecedores::withTrashed()->get(); //lista todos inlsuive os apagados
 Fornecedores::onlyTrashed()->get();//lista só os apagados
+
+------------------------------------------------------------
+criar um seeder:
+php artisan make:seeder
+SiteContatoSeeder
+
+import a claase do model
+
+para salvar os registros:
+php artisan db:seed
+
+->obs. ele sal os que ja foram salvos, entao comenta no db seed os que ja estão no BD. ou especificar a classe que voce q subir para o BD
+
+para salvar os registros:
+php artisan db:seed --class=SiteContatoSeeder
+
+--------------------------------------------------------------
+Factories
+semeando tabelas em massa com a dependência Faker
+php artisan make:factory SiteContatoFactory
+
