@@ -174,5 +174,5 @@ php artisan db:seed --class=SiteContatoSeeder
 --------------------------------------------------------------
 Factories
 semeando tabelas em massa com a dependência Faker
-php artisan make:factory SiteContatoFactory
+php artisan make:factory SiteContatoFactory --model=siteContato
 
