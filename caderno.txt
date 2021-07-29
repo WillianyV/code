@@ -1,6 +1,3 @@
-senha herculano pc - alpha
-senha do post - 123
-
 PHP
 Rotas
 >o arquivo web é PHP serve para registrar as rotas que trabalharam no velho web ou seja processando páginas do lado do banco servindo essas páginas em resposta às requisições permitindo inclusive a utilização de recursos como o Cockies e sessões
