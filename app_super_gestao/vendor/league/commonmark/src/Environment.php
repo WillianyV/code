@@ -369,15 +369,10 @@ final class Environment implements ConfigurableEnvironmentInterface
 
         if (empty($chars)) {
             // If no special inline characters exist then parse the whole line
-            $this->inlineParserCharacterRegex = '/^.+$/';
+            $this->inlineParserCharacterRegex = '/^.+$/u';
         } else {
             // Match any character which inline parsers are not interested in
-            $this->inlineParserCharacterRegex = '/^[^' . \preg_quote(\implode('', $chars), '/') . ']+/';
-
-            // Only add the u modifier (which slows down performance) if we have a multi-byte UTF-8 character in our regex
-            if (\strlen($this->inlineParserCharacterRegex) > \mb_strlen($this->inlineParserCharacterRegex)) {
-                $this->inlineParserCharacterRegex .= 'u';
-            }
+            $this->inlineParserCharacterRegex = '/^[^' . \preg_quote(\implode('', $chars), '/') . ']+/u';
         }
     }
 
@@ -415,7 +410,7 @@ final class Environment implements ConfigurableEnvironmentInterface
             return $list[$class];
         }
 
-        while (\class_exists($parent = $parent ?? $class) && $parent = \get_parent_class($parent)) {
+        while ($parent = \get_parent_class($parent ?? $class)) {
             if (!isset($list[$parent])) {
                 continue;
             }

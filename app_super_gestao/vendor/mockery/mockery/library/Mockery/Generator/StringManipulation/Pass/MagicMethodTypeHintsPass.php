@@ -23,7 +23,6 @@ namespace Mockery\Generator\StringManipulation\Pass;
 use Mockery\Generator\MockConfiguration;
 use Mockery\Generator\TargetClassInterface;
 use Mockery\Generator\Method;
-use Mockery\Generator\Parameter;
 
 class MagicMethodTypeHintsPass implements Pass
 {
@@ -154,7 +153,9 @@ class MagicMethodTypeHintsPass implements Pass
         }
 
         $groupMatches = end($parameterMatches);
-        $parameterNames = is_array($groupMatches) ? $groupMatches : [$groupMatches];
+        $parameterNames = is_array($groupMatches) ?
+            $groupMatches                         :
+            array($groupMatches);
 
         return $parameterNames;
     }
@@ -175,8 +176,10 @@ class MagicMethodTypeHintsPass implements Pass
         $declaration .= ' function ' . $method->getName() . '(';
 
         foreach ($method->getParameters() as $index => $parameter) {
-            $declaration .= $this->renderTypeHint($parameter);
-            $name = isset($namedParameters[$index]) ? $namedParameters[$index] : $parameter->getName();
+            $declaration .= $parameter->getTypeHintAsString() . ' ';
+            $name = isset($namedParameters[$index]) ?
+                $namedParameters[$index]            :
+                $parameter->getName();
             $declaration .= '$' . $name;
             $declaration .= ',';
         }
@@ -184,18 +187,11 @@ class MagicMethodTypeHintsPass implements Pass
         $declaration .= ') ';
 
         $returnType = $method->getReturnType();
-        if ($returnType !== null) {
-            $declaration .= sprintf(': %s', $returnType);
+        if (!empty($returnType)) {
+            $declaration .= ': ' . $returnType;
         }
 
         return $declaration;
-    }
-
-    protected function renderTypeHint(Parameter $param)
-    {
-        $typeHint = $param->getTypeHint();
-
-        return $typeHint === null ? '' : sprintf('%s ', $typeHint);
     }
 
     /**

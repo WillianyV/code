@@ -709,7 +709,7 @@ class Builder
         );
 
         if (! $value instanceof Expression) {
-            $this->addBinding($this->flattenValue($value), 'where');
+            $this->addBinding($value, 'where');
         }
 
         return $this;
@@ -1078,25 +1078,7 @@ class Builder
 
         $this->wheres[] = compact('type', 'column', 'values', 'boolean', 'not');
 
-        $this->addBinding(array_slice($this->cleanBindings(Arr::flatten($values)), 0, 2), 'where');
-
-        return $this;
-    }
-
-    /**
-     * Add a where between statement using columns to the query.
-     *
-     * @param  string  $column
-     * @param  array  $values
-     * @param  string  $boolean
-     * @param  bool  $not
-     * @return $this
-     */
-    public function whereBetweenColumns($column, array $values, $boolean = 'and', $not = false)
-    {
-        $type = 'betweenColumns';
-
-        $this->wheres[] = compact('type', 'column', 'values', 'boolean', 'not');
+        $this->addBinding($this->cleanBindings($values), 'where');
 
         return $this;
     }
@@ -1114,18 +1096,6 @@ class Builder
     }
 
     /**
-     * Add an or where between statement using columns to the query.
-     *
-     * @param  string  $column
-     * @param  array  $values
-     * @return $this
-     */
-    public function orWhereBetweenColumns($column, array $values)
-    {
-        return $this->whereBetweenColumns($column, $values, 'or');
-    }
-
-    /**
      * Add a where not between statement to the query.
      *
      * @param  string  $column
@@ -1139,19 +1109,6 @@ class Builder
     }
 
     /**
-     * Add a where not between statement using columns to the query.
-     *
-     * @param  string  $column
-     * @param  array  $values
-     * @param  string  $boolean
-     * @return $this
-     */
-    public function whereNotBetweenColumns($column, array $values, $boolean = 'and')
-    {
-        return $this->whereBetweenColumns($column, $values, $boolean, true);
-    }
-
-    /**
      * Add an or where not between statement to the query.
      *
      * @param  string  $column
@@ -1161,18 +1118,6 @@ class Builder
     public function orWhereNotBetween($column, array $values)
     {
         return $this->whereNotBetween($column, $values, 'or');
-    }
-
-    /**
-     * Add an or where not between statement using columns to the query.
-     *
-     * @param  string  $column
-     * @param  array  $values
-     * @return $this
-     */
-    public function orWhereNotBetweenColumns($column, array $values)
-    {
-        return $this->whereNotBetweenColumns($column, $values, 'or');
     }
 
     /**
@@ -1200,8 +1145,6 @@ class Builder
         [$value, $operator] = $this->prepareValueAndOperator(
             $value, $operator, func_num_args() === 2
         );
-
-        $value = $this->flattenValue($value);
 
         if ($value instanceof DateTimeInterface) {
             $value = $value->format('Y-m-d');
@@ -1242,8 +1185,6 @@ class Builder
             $value, $operator, func_num_args() === 2
         );
 
-        $value = $this->flattenValue($value);
-
         if ($value instanceof DateTimeInterface) {
             $value = $value->format('H:i:s');
         }
@@ -1282,8 +1223,6 @@ class Builder
         [$value, $operator] = $this->prepareValueAndOperator(
             $value, $operator, func_num_args() === 2
         );
-
-        $value = $this->flattenValue($value);
 
         if ($value instanceof DateTimeInterface) {
             $value = $value->format('d');
@@ -1328,8 +1267,6 @@ class Builder
             $value, $operator, func_num_args() === 2
         );
 
-        $value = $this->flattenValue($value);
-
         if ($value instanceof DateTimeInterface) {
             $value = $value->format('m');
         }
@@ -1372,8 +1309,6 @@ class Builder
         [$value, $operator] = $this->prepareValueAndOperator(
             $value, $operator, func_num_args() === 2
         );
-
-        $value = $this->flattenValue($value);
 
         if ($value instanceof DateTimeInterface) {
             $value = $value->format('Y');
@@ -1447,7 +1382,7 @@ class Builder
     /**
      * Add another query builder as a nested where to the query builder.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  $this  $query
      * @param  string  $boolean
      * @return $this
      */
@@ -1592,7 +1527,7 @@ class Builder
     }
 
     /**
-     * Adds an or where condition using row values.
+     * Adds a or where condition using row values.
      *
      * @param  array  $columns
      * @param  string  $operator
@@ -1627,7 +1562,7 @@ class Builder
     }
 
     /**
-     * Add an "or where JSON contains" clause to the query.
+     * Add a "or where JSON contains" clause to the query.
      *
      * @param  string  $column
      * @param  mixed  $value
@@ -1652,7 +1587,7 @@ class Builder
     }
 
     /**
-     * Add an "or where JSON not contains" clause to the query.
+     * Add a "or where JSON not contains" clause to the query.
      *
      * @param  string  $column
      * @param  mixed  $value
@@ -1683,14 +1618,14 @@ class Builder
         $this->wheres[] = compact('type', 'column', 'operator', 'value', 'boolean');
 
         if (! $value instanceof Expression) {
-            $this->addBinding((int) $this->flattenValue($value));
+            $this->addBinding($value);
         }
 
         return $this;
     }
 
     /**
-     * Add an "or where JSON length" clause to the query.
+     * Add a "or where JSON length" clause to the query.
      *
      * @param  string  $column
      * @param  mixed  $operator
@@ -1832,14 +1767,14 @@ class Builder
         $this->havings[] = compact('type', 'column', 'operator', 'value', 'boolean');
 
         if (! $value instanceof Expression) {
-            $this->addBinding($this->flattenValue($value), 'having');
+            $this->addBinding($value, 'having');
         }
 
         return $this;
     }
 
     /**
-     * Add an "or having" clause to the query.
+     * Add a "or having" clause to the query.
      *
      * @param  string  $column
      * @param  string|null  $operator
@@ -1870,7 +1805,7 @@ class Builder
 
         $this->havings[] = compact('type', 'column', 'values', 'boolean', 'not');
 
-        $this->addBinding(array_slice($this->cleanBindings(Arr::flatten($values)), 0, 2), 'having');
+        $this->addBinding($this->cleanBindings($values), 'having');
 
         return $this;
     }
@@ -2110,8 +2045,6 @@ class Builder
     /**
      * Remove all existing orders and optionally add a new order.
      *
-     * @param  string|null  $column
-     * @param  string  $direction
      * @return $this
      */
     public function reorder($column = null, $direction = 'asc')
@@ -3090,17 +3023,6 @@ class Builder
         return array_values(array_filter($bindings, function ($binding) {
             return ! $binding instanceof Expression;
         }));
-    }
-
-    /**
-     * Get a scalar type value from an unknown type of input.
-     *
-     * @param  mixed  $value
-     * @return mixed
-     */
-    protected function flattenValue($value)
-    {
-        return is_array($value) ? head(Arr::flatten($value)) : $value;
     }
 
     /**

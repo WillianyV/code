@@ -93,6 +93,8 @@ class TelegramBotHandler extends AbstractProcessingHandler
 
         $this->apiKey = $apiKey;
         $this->channel = $channel;
+        $this->level = $level;
+        $this->bubble = $bubble;
         $this->setParseMode($parseMode);
         $this->disableWebPagePreview($disableWebPagePreview);
         $this->disableNotification($disableNotification);
@@ -118,30 +120,6 @@ class TelegramBotHandler extends AbstractProcessingHandler
     {
         $this->disableNotification = $disableNotification;
         return $this;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function handleBatch(array $records): void
-    {
-        $messages = [];
-
-        foreach ($records as $record) {
-            if (!$this->isHandling($record)) {
-                continue;
-            }
-
-            if ($this->processors) {
-                $record = $this->processRecord($record);
-            }
-
-            $messages[] = $record;
-        }
-
-        if (!empty($messages)) {
-            $this->send((string) $this->getFormatter()->formatBatch($messages));
-        }
     }
 
     /**

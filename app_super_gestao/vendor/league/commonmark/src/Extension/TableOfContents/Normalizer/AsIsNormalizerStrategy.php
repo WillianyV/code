@@ -13,7 +13,7 @@ namespace League\CommonMark\Extension\TableOfContents\Normalizer;
 
 use League\CommonMark\Block\Element\ListBlock;
 use League\CommonMark\Block\Element\ListItem;
-use League\CommonMark\Extension\TableOfContents\Node\TableOfContents;
+use League\CommonMark\Extension\TableOfContents\TableOfContents;
 
 final class AsIsNormalizerStrategy implements NormalizerStrategyInterface
 {
@@ -39,8 +39,6 @@ final class AsIsNormalizerStrategy implements NormalizerStrategyInterface
             }
 
             $newListBlock = new ListBlock($this->parentListBlock->getListData());
-            $newListBlock->setStartLine($listItemToAdd->getStartLine());
-            $newListBlock->setEndLine($listItemToAdd->getEndLine());
             $this->lastListItem->appendChild($newListBlock);
             $this->parentListBlock = $newListBlock;
             $this->lastListItem = null;
@@ -65,6 +63,3 @@ final class AsIsNormalizerStrategy implements NormalizerStrategyInterface
         $this->lastListItem = $listItemToAdd;
     }
 }
-
-// Trigger autoload without causing a deprecated error
-\class_exists(TableOfContents::class);

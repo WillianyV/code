@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Tarefa;
 use Illuminate\Http\Request;
 
 class TarefaController extends Controller
 {
+    public function __construct() {
+        $this->middleware('auth');
+    }
     /**
      * Display a listing of the resource.
      *
@@ -13,7 +17,7 @@ class TarefaController extends Controller
      */
     public function index()
     {
-        //
+        return 'Chegamos até aqui';
     }
 
     /**
@@ -40,10 +44,10 @@ class TarefaController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param  \App\Models\Tarefa  $tarefa
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Tarefa $tarefa)
     {
         //
     }
@@ -51,10 +55,10 @@ class TarefaController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  int  $id
+     * @param  \App\Models\Tarefa  $tarefa
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(Tarefa $tarefa)
     {
         //
     }
@@ -63,10 +67,10 @@ class TarefaController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
+     * @param  \App\Models\Tarefa  $tarefa
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Tarefa $tarefa)
     {
         //
     }
@@ -74,10 +78,10 @@ class TarefaController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param  \App\Models\Tarefa  $tarefa
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Tarefa $tarefa)
     {
         //
     }

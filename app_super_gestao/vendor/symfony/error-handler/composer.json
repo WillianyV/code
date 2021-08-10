@@ -1,7 +1,7 @@
 {
     "name": "symfony/error-handler",
     "type": "library",
-    "description": "Provides tools to manage errors and ease debugging PHP code",
+    "description": "Symfony ErrorHandler Component",
     "keywords": [],
     "homepage": "https://symfony.com",
     "license": "MIT",
@@ -32,5 +32,10 @@
             "/Tests/"
         ]
     },
-    "minimum-stability": "dev"
+    "minimum-stability": "dev",
+    "extra": {
+        "branch-alias": {
+            "dev-master": "5.1-dev"
+        }
+    }
 }

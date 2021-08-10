@@ -74,7 +74,7 @@ class UnicodeString extends AbstractUnicodeString
         $str = clone $this;
         $chunks = [];
 
-        foreach (preg_split($rx, $this->string, -1, \PREG_SPLIT_DELIM_CAPTURE | \PREG_SPLIT_NO_EMPTY) as $chunk) {
+        foreach (preg_split($rx, $this->string, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY) as $chunk) {
             $str->string = $chunk;
             $chunks[] = clone $str;
         }
@@ -100,10 +100,10 @@ class UnicodeString extends AbstractUnicodeString
         }
 
         if ($this->ignoreCase) {
-            return 0 === mb_stripos(grapheme_extract($this->string, \strlen($suffix), \GRAPHEME_EXTR_MAXBYTES, \strlen($this->string) - \strlen($suffix)), $suffix, 0, 'UTF-8');
+            return 0 === mb_stripos(grapheme_extract($this->string, \strlen($suffix), GRAPHEME_EXTR_MAXBYTES, \strlen($this->string) - \strlen($suffix)), $suffix, 0, 'UTF-8');
         }
 
-        return $suffix === grapheme_extract($this->string, \strlen($suffix), \GRAPHEME_EXTR_MAXBYTES, \strlen($this->string) - \strlen($suffix));
+        return $suffix === grapheme_extract($this->string, \strlen($suffix), GRAPHEME_EXTR_MAXBYTES, \strlen($this->string) - \strlen($suffix));
     }
 
     public function equalsTo($string): bool
@@ -143,11 +143,7 @@ class UnicodeString extends AbstractUnicodeString
             return null;
         }
 
-        try {
-            $i = $this->ignoreCase ? grapheme_stripos($this->string, $needle, $offset) : grapheme_strpos($this->string, $needle, $offset);
-        } catch (\ValueError $e) {
-            return null;
-        }
+        $i = $this->ignoreCase ? grapheme_stripos($this->string, $needle, $offset) : grapheme_strpos($this->string, $needle, $offset);
 
         return false === $i ? null : $i;
     }
@@ -239,7 +235,7 @@ class UnicodeString extends AbstractUnicodeString
             $result = '';
             $indexOf = $this->ignoreCase ? 'grapheme_stripos' : 'grapheme_strpos';
 
-            while ('' !== $tail && false !== $i = $indexOf($tail, $from)) {
+            while (false !== $i = $indexOf($tail, $from)) {
                 $slice = grapheme_substr($tail, 0, $i);
                 $result .= $slice.$to;
                 $tail = substr($tail, \strlen($slice) + \strlen($from));
@@ -267,11 +263,7 @@ class UnicodeString extends AbstractUnicodeString
     public function slice(int $start = 0, int $length = null): AbstractString
     {
         $str = clone $this;
-
-        if (\PHP_VERSION_ID < 80000 && 0 > $start && grapheme_strlen($this->string) < -$start) {
-            $start = 0;
-        }
-        $str->string = (string) grapheme_substr($this->string, $start, $length ?? 2147483647);
+        $str->string = (string) grapheme_substr($this->string, $start, $length ?? \PHP_INT_MAX);
 
         return $str;
     }
@@ -279,13 +271,9 @@ class UnicodeString extends AbstractUnicodeString
     public function splice(string $replacement, int $start = 0, int $length = null): AbstractString
     {
         $str = clone $this;
-
-        if (\PHP_VERSION_ID < 80000 && 0 > $start && grapheme_strlen($this->string) < -$start) {
-            $start = 0;
-        }
         $start = $start ? \strlen(grapheme_substr($this->string, 0, $start)) : 0;
-        $length = $length ? \strlen(grapheme_substr($this->string, $start, $length ?? 2147483647)) : $length;
-        $str->string = substr_replace($this->string, $replacement, $start, $length ?? 2147483647);
+        $length = $length ? \strlen(grapheme_substr($this->string, $start, $length ?? \PHP_INT_MAX)) : $length;
+        $str->string = substr_replace($this->string, $replacement, $start, $length ?? \PHP_INT_MAX);
         normalizer_is_normalized($str->string) ?: $str->string = normalizer_normalize($str->string);
 
         if (false === $str->string) {
@@ -297,7 +285,7 @@ class UnicodeString extends AbstractUnicodeString
 
     public function split(string $delimiter, int $limit = null, int $flags = null): array
     {
-        if (1 > $limit = $limit ?? 2147483647) {
+        if (1 > $limit = $limit ?? \PHP_INT_MAX) {
             throw new InvalidArgumentException('Split limit must be a positive integer.');
         }
 
@@ -351,18 +339,14 @@ class UnicodeString extends AbstractUnicodeString
         }
 
         if ($this->ignoreCase) {
-            return 0 === mb_stripos(grapheme_extract($this->string, \strlen($prefix), \GRAPHEME_EXTR_MAXBYTES), $prefix, 0, 'UTF-8');
+            return 0 === mb_stripos(grapheme_extract($this->string, \strlen($prefix), GRAPHEME_EXTR_MAXBYTES), $prefix, 0, 'UTF-8');
         }
 
-        return $prefix === grapheme_extract($this->string, \strlen($prefix), \GRAPHEME_EXTR_MAXBYTES);
+        return $prefix === grapheme_extract($this->string, \strlen($prefix), GRAPHEME_EXTR_MAXBYTES);
     }
 
     public function __wakeup()
     {
-        if (!\is_string($this->string)) {
-            throw new \BadMethodCallException('Cannot unserialize '.__CLASS__);
-        }
-
         normalizer_is_normalized($this->string) ?: $this->string = normalizer_normalize($this->string);
     }
 

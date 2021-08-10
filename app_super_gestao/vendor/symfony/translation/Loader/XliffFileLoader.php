@@ -46,7 +46,7 @@ class XliffFileLoader implements LoaderInterface
         $catalogue = new MessageCatalogue($locale);
         $this->extract($resource, $catalogue, $domain);
 
-        if (class_exists(FileResource::class)) {
+        if (class_exists('Symfony\Component\Config\Resource\FileResource')) {
             $catalogue->addResource(new FileResource($resource));
         }
 

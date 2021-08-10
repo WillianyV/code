@@ -221,7 +221,7 @@ class Factory
     /**
      * Assert how many requests have been recorded.
      *
-     * @param  int  $count
+     * @param $count
      * @return void
      */
     public function assertSentCount($count)

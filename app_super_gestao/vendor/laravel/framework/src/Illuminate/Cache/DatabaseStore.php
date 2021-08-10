@@ -4,7 +4,6 @@ namespace Illuminate\Cache;
 
 use Closure;
 use Exception;
-use Illuminate\Contracts\Cache\LockProvider;
 use Illuminate\Contracts\Cache\Store;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\PostgresConnection;
@@ -12,7 +11,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\InteractsWithTime;
 use Illuminate\Support\Str;
 
-class DatabaseStore implements LockProvider, Store
+class DatabaseStore implements Store
 {
     use InteractsWithTime, RetrievesMultipleKeys;
 
@@ -45,7 +44,7 @@ class DatabaseStore implements LockProvider, Store
     protected $lockTable;
 
     /**
-     * An array representation of the lock lottery odds.
+     * A array representation of the lock lottery odds.
      *
      * @var array
      */

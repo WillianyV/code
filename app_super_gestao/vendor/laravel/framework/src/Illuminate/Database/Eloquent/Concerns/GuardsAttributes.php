@@ -28,13 +28,6 @@ trait GuardsAttributes
     protected static $unguarded = false;
 
     /**
-     * The actual columns that exist on the database and can be guarded.
-     *
-     * @var array
-     */
-    protected static $guardableColumns = [];
-
-    /**
      * Get the fillable attributes for the model.
      *
      * @return array
@@ -185,7 +178,6 @@ trait GuardsAttributes
         }
 
         return empty($this->getFillable()) &&
-            strpos($key, '.') === false &&
             ! Str::startsWith($key, '_');
     }
 
@@ -197,30 +189,7 @@ trait GuardsAttributes
      */
     public function isGuarded($key)
     {
-        if (empty($this->getGuarded())) {
-            return false;
-        }
-
-        return $this->getGuarded() == ['*'] ||
-               ! empty(preg_grep('/^'.preg_quote($key).'$/i', $this->getGuarded())) ||
-               ! $this->isGuardableColumn($key);
-    }
-
-    /**
-     * Determine if the given column is a valid, guardable column.
-     *
-     * @param  string  $key
-     * @return bool
-     */
-    protected function isGuardableColumn($key)
-    {
-        if (! isset(static::$guardableColumns[get_class($this)])) {
-            static::$guardableColumns[get_class($this)] = $this->getConnection()
-                        ->getSchemaBuilder()
-                        ->getColumnListing($this->getTable());
-        }
-
-        return in_array($key, static::$guardableColumns[get_class($this)]);
+        return in_array($key, $this->getGuarded()) || $this->getGuarded() == ['*'];
     }
 
     /**

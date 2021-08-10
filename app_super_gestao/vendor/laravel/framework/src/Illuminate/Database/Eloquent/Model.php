@@ -146,14 +146,14 @@ abstract class Model implements Arrayable, ArrayAccess, Jsonable, JsonSerializab
     /**
      * The name of the "created at" column.
      *
-     * @var string|null
+     * @var string
      */
     const CREATED_AT = 'created_at';
 
     /**
      * The name of the "updated at" column.
      *
-     * @var string|null
+     * @var string
      */
     const UPDATED_AT = 'updated_at';
 
@@ -396,12 +396,10 @@ abstract class Model implements Arrayable, ArrayAccess, Jsonable, JsonSerializab
      *
      * @param  string  $key
      * @return string
-     *
-     * @deprecated This method is deprecated and will be removed in a future Laravel version.
      */
     protected function removeTableFromKey($key)
     {
-        return $key;
+        return Str::contains($key, '.') ? last(explode('.', $key)) : $key;
     }
 
     /**
@@ -1582,8 +1580,6 @@ abstract class Model implements Arrayable, ArrayAccess, Jsonable, JsonSerializab
     public function resolveChildRouteBinding($childType, $value, $field)
     {
         $relationship = $this->{Str::plural(Str::camel($childType))}();
-
-        $field = $field ?: $relationship->getRelated()->getRouteKeyName();
 
         if ($relationship instanceof HasManyThrough ||
             $relationship instanceof BelongsToMany) {

@@ -36,7 +36,6 @@ class QuestionHelper extends Helper
     private $inputStream;
     private static $shell;
     private static $stty = true;
-    private static $stdinIsInteractive;
 
     /**
      * Asks a question to the user.
@@ -107,13 +106,8 @@ class QuestionHelper extends Helper
     {
         $this->writePrompt($output, $question);
 
-        $inputStream = $this->inputStream ?: \STDIN;
+        $inputStream = $this->inputStream ?: fopen('php://stdin', 'r');
         $autocomplete = $question->getAutocompleterCallback();
-
-        if (\function_exists('sapi_windows_cp_set')) {
-            // Codepage used by cmd.exe on Windows to allow special characters (éàüñ).
-            @sapi_windows_cp_set(1252);
-        }
 
         if (null === $autocomplete || !self::$stty || !Terminal::hasSttyAvailable()) {
             $ret = false;
@@ -129,7 +123,7 @@ class QuestionHelper extends Helper
             }
 
             if (false === $ret) {
-                $ret = $this->readInput($inputStream, $question);
+                $ret = fgets($inputStream, 4096);
                 if (false === $ret) {
                     throw new MissingInputException('Aborted.');
                 }
@@ -172,13 +166,13 @@ class QuestionHelper extends Helper
             $choices = $question->getChoices();
 
             if (!$question->isMultiselect()) {
-                return $choices[$default] ?? $default;
+                return isset($choices[$default]) ? $choices[$default] : $default;
             }
 
             $default = explode(',', $default);
             foreach ($default as $k => $v) {
                 $v = $question->isTrimmable() ? trim($v) : $v;
-                $default[$k] = $choices[$v] ?? $v;
+                $default[$k] = isset($choices[$v]) ? $choices[$v] : $v;
             }
         }
 
@@ -311,7 +305,7 @@ class QuestionHelper extends Helper
                         $remainingCharacters = substr($ret, \strlen(trim($this->mostRecentlyEnteredValue($fullChoice))));
                         $output->write($remainingCharacters);
                         $fullChoice .= $remainingCharacters;
-                        $i = (false === $encoding = mb_detect_encoding($fullChoice, null, true)) ? \strlen($fullChoice) : mb_strlen($fullChoice, $encoding);
+                        $i = self::strlen($fullChoice);
 
                         $matches = array_filter(
                             $autocomplete($ret),
@@ -411,7 +405,7 @@ class QuestionHelper extends Helper
                 $exe = $tmpExe;
             }
 
-            $sExec = shell_exec('"'.$exe.'"');
+            $sExec = shell_exec($exe);
             $value = $trimmable ? rtrim($sExec) : $sExec;
             $output->writeln('');
 
@@ -424,26 +418,33 @@ class QuestionHelper extends Helper
 
         if (self::$stty && Terminal::hasSttyAvailable()) {
             $sttyMode = shell_exec('stty -g');
+
             shell_exec('stty -echo');
-        } elseif ($this->isInteractiveInput($inputStream)) {
-            throw new RuntimeException('Unable to hide the response.');
-        }
-
-        $value = fgets($inputStream, 4096);
-
-        if (self::$stty && Terminal::hasSttyAvailable()) {
+            $value = fgets($inputStream, 4096);
             shell_exec(sprintf('stty %s', $sttyMode));
+
+            if (false === $value) {
+                throw new MissingInputException('Aborted.');
+            }
+            if ($trimmable) {
+                $value = trim($value);
+            }
+            $output->writeln('');
+
+            return $value;
         }
 
-        if (false === $value) {
-            throw new MissingInputException('Aborted.');
-        }
-        if ($trimmable) {
-            $value = trim($value);
-        }
-        $output->writeln('');
+        if (false !== $shell = $this->getShell()) {
+            $readCmd = 'csh' === $shell ? 'set mypassword = $<' : 'read -r mypassword';
+            $command = sprintf("/usr/bin/env %s -c 'stty -echo; %s; stty echo; echo \$mypassword' 2> /dev/null", $shell, $readCmd);
+            $sCommand = shell_exec($command);
+            $value = $trimmable ? rtrim($sCommand) : $sCommand;
+            $output->writeln('');
 
-        return $value;
+            return $value;
+        }
+
+        throw new RuntimeException('Unable to hide the response.');
     }
 
     /**
@@ -471,99 +472,56 @@ class QuestionHelper extends Helper
                 throw $e;
             } catch (\Exception $error) {
             }
+
+            $attempts = $attempts ?? -(int) $this->askForever();
         }
 
         throw $error;
     }
 
-    private function isInteractiveInput($inputStream): bool
+    /**
+     * Returns a valid unix shell.
+     *
+     * @return string|bool The valid shell name, false in case no valid shell is found
+     */
+    private function getShell()
     {
-        if ('php://stdin' !== (stream_get_meta_data($inputStream)['uri'] ?? null)) {
-            return false;
+        if (null !== self::$shell) {
+            return self::$shell;
         }
 
-        if (null !== self::$stdinIsInteractive) {
-            return self::$stdinIsInteractive;
+        self::$shell = false;
+
+        if (file_exists('/usr/bin/env')) {
+            // handle other OSs with bash/zsh/ksh/csh if available to hide the answer
+            $test = "/usr/bin/env %s -c 'echo OK' 2> /dev/null";
+            foreach (['bash', 'zsh', 'ksh', 'csh'] as $sh) {
+                if ('OK' === rtrim(shell_exec(sprintf($test, $sh)))) {
+                    self::$shell = $sh;
+                    break;
+                }
+            }
+        }
+
+        return self::$shell;
+    }
+
+    private function askForever(): bool
+    {
+        $inputStream = $this->inputStream ?: fopen('php://stdin', 'r');
+
+        if ('php://stdin' !== (stream_get_meta_data($inputStream)['url'] ?? null)) {
+            return true;
         }
 
         if (\function_exists('stream_isatty')) {
-            return self::$stdinIsInteractive = stream_isatty(fopen('php://stdin', 'r'));
+            return stream_isatty($inputStream);
         }
 
         if (\function_exists('posix_isatty')) {
-            return self::$stdinIsInteractive = posix_isatty(fopen('php://stdin', 'r'));
+            return posix_isatty($inputStream);
         }
 
-        if (!\function_exists('exec')) {
-            return self::$stdinIsInteractive = true;
-        }
-
-        exec('stty 2> /dev/null', $output, $status);
-
-        return self::$stdinIsInteractive = 1 !== $status;
-    }
-
-    /**
-     * Reads one or more lines of input and returns what is read.
-     *
-     * @param resource $inputStream The handler resource
-     * @param Question $question    The question being asked
-     *
-     * @return string|bool The input received, false in case input could not be read
-     */
-    private function readInput($inputStream, Question $question)
-    {
-        if (!$question->isMultiline()) {
-            return fgets($inputStream, 4096);
-        }
-
-        $multiLineStreamReader = $this->cloneInputStream($inputStream);
-        if (null === $multiLineStreamReader) {
-            return false;
-        }
-
-        $ret = '';
-        while (false !== ($char = fgetc($multiLineStreamReader))) {
-            if (\PHP_EOL === "{$ret}{$char}") {
-                break;
-            }
-            $ret .= $char;
-        }
-
-        return $ret;
-    }
-
-    /**
-     * Clones an input stream in order to act on one instance of the same
-     * stream without affecting the other instance.
-     *
-     * @param resource $inputStream The handler resource
-     *
-     * @return resource|null The cloned resource, null in case it could not be cloned
-     */
-    private function cloneInputStream($inputStream)
-    {
-        $streamMetaData = stream_get_meta_data($inputStream);
-        $seekable = $streamMetaData['seekable'] ?? false;
-        $mode = $streamMetaData['mode'] ?? 'rb';
-        $uri = $streamMetaData['uri'] ?? null;
-
-        if (null === $uri) {
-            return null;
-        }
-
-        $cloneStream = fopen($uri, $mode);
-
-        // For seekable and writable streams, add all the same data to the
-        // cloned stream and then seek to the same offset.
-        if (true === $seekable && !\in_array($mode, ['r', 'rb', 'rt'])) {
-            $offset = ftell($inputStream);
-            rewind($inputStream);
-            stream_copy_to_stream($inputStream, $cloneStream);
-            fseek($inputStream, $offset);
-            fseek($cloneStream, $offset);
-        }
-
-        return $cloneStream;
+        return true;
     }
 }

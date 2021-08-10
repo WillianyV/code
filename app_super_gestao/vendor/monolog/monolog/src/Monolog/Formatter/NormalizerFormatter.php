@@ -24,14 +24,10 @@ class NormalizerFormatter implements FormatterInterface
 {
     public const SIMPLE_DATE = "Y-m-d\TH:i:sP";
 
-    /** @var string */
     protected $dateFormat;
-    /** @var int */
     protected $maxNormalizeDepth = 9;
-    /** @var int */
     protected $maxNormalizeItemCount = 1000;
 
-    /** @var int */
     private $jsonEncodeOptions = Utils::DEFAULT_JSON_FLAGS;
 
     /**
@@ -63,18 +59,6 @@ class NormalizerFormatter implements FormatterInterface
         }
 
         return $records;
-    }
-
-    public function getDateFormat(): string
-    {
-        return $this->dateFormat;
-    }
-
-    public function setDateFormat(string $dateFormat): self
-    {
-        $this->dateFormat = $dateFormat;
-
-        return $this;
     }
 
     /**
@@ -115,7 +99,7 @@ class NormalizerFormatter implements FormatterInterface
         if ($enable) {
             $this->jsonEncodeOptions |= JSON_PRETTY_PRINT;
         } else {
-            $this->jsonEncodeOptions &= ~JSON_PRETTY_PRINT;
+            $this->jsonEncodeOptions ^= JSON_PRETTY_PRINT;
         }
 
         return $this;
@@ -175,7 +159,12 @@ class NormalizerFormatter implements FormatterInterface
                 $value = $data->__toString();
             } else {
                 // the rest is normalized by json encoding and decoding it
-                $value = json_decode($this->toJson($data, true), true);
+                $encoded = $this->toJson($data, true);
+                if ($encoded === false) {
+                    $value = 'JSON_ERROR';
+                } else {
+                    $value = json_decode($encoded, true);
+                }
             }
 
             return [Utils::getClass($data) => $value];
@@ -259,13 +248,13 @@ class NormalizerFormatter implements FormatterInterface
         return $date->format($this->dateFormat);
     }
 
-    public function addJsonEncodeOption(int $option)
+    public function addJsonEncodeOption($option)
     {
         $this->jsonEncodeOptions |= $option;
     }
 
-    public function removeJsonEncodeOption(int $option)
+    public function removeJsonEncodeOption($option)
     {
-        $this->jsonEncodeOptions &= ~$option;
+        $this->jsonEncodeOptions ^= $option;
     }
 }

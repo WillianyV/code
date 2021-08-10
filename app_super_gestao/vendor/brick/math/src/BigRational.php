@@ -108,10 +108,7 @@ final class BigRational extends BigNumber
      */
     public static function zero() : BigRational
     {
-        /**
-         * @psalm-suppress ImpureStaticVariable
-         * @var BigRational|null $zero
-         */
+        /** @psalm-suppress ImpureStaticVariable */
         static $zero;
 
         if ($zero === null) {
@@ -130,10 +127,7 @@ final class BigRational extends BigNumber
      */
     public static function one() : BigRational
     {
-        /**
-         * @psalm-suppress ImpureStaticVariable
-         * @var BigRational|null $one
-         */
+        /** @psalm-suppress ImpureStaticVariable */
         static $one;
 
         if ($one === null) {
@@ -152,10 +146,7 @@ final class BigRational extends BigNumber
      */
     public static function ten() : BigRational
     {
-        /**
-         * @psalm-suppress ImpureStaticVariable
-         * @var BigRational|null $ten
-         */
+        /** @psalm-suppress ImpureStaticVariable */
         static $ten;
 
         if ($ten === null) {
@@ -467,7 +458,6 @@ final class BigRational extends BigNumber
      * This method is only here to implement interface Serializable and cannot be accessed directly.
      *
      * @internal
-     * @psalm-suppress RedundantPropertyInitializationCheck
      *
      * @param string $value
      *

@@ -318,11 +318,7 @@ class PhpRedisConnection extends Connection implements ConnectionContract
             $options['count'] ?? 10
         );
 
-        if ($result === false) {
-            $result = [];
-        }
-
-        return $cursor === 0 && empty($result) ? false : [$cursor, $result];
+        return empty($result) ? $result : [$cursor, $result];
     }
 
     /**
@@ -340,11 +336,7 @@ class PhpRedisConnection extends Connection implements ConnectionContract
             $options['count'] ?? 10
         );
 
-        if ($result === false) {
-            $result = [];
-        }
-
-        return $cursor === 0 && empty($result) ? false : [$cursor, $result];
+        return $result === false ? [0, []] : [$cursor, $result];
     }
 
     /**
@@ -362,11 +354,7 @@ class PhpRedisConnection extends Connection implements ConnectionContract
             $options['count'] ?? 10
         );
 
-        if ($result === false) {
-            $result = [];
-        }
-
-        return $cursor === 0 && empty($result) ? false : [$cursor, $result];
+        return $result === false ? [0, []] : [$cursor, $result];
     }
 
     /**
@@ -384,11 +372,7 @@ class PhpRedisConnection extends Connection implements ConnectionContract
             $options['count'] ?? 10
         );
 
-        if ($result === false) {
-            $result = [];
-        }
-
-        return $cursor === 0 && empty($result) ? false : [$cursor, $result];
+        return $result === false ? [0, []] : [$cursor, $result];
     }
 
     /**

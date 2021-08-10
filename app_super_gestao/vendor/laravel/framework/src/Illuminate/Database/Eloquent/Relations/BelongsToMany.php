@@ -554,6 +554,7 @@ class BelongsToMany extends Relation
      * Set a "or where not null" clause for a pivot table column.
      *
      * @param  string  $column
+     * @param  bool  $not
      * @return $this
      */
     public function orWherePivotNotNull($column)

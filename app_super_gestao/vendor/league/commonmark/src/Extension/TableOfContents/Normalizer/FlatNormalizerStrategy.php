@@ -12,7 +12,7 @@
 namespace League\CommonMark\Extension\TableOfContents\Normalizer;
 
 use League\CommonMark\Block\Element\ListItem;
-use League\CommonMark\Extension\TableOfContents\Node\TableOfContents;
+use League\CommonMark\Extension\TableOfContents\TableOfContents;
 
 final class FlatNormalizerStrategy implements NormalizerStrategyInterface
 {
@@ -29,6 +29,3 @@ final class FlatNormalizerStrategy implements NormalizerStrategyInterface
         $this->toc->appendChild($listItemToAdd);
     }
 }
-
-// Trigger autoload without causing a deprecated error
-\class_exists(TableOfContents::class);

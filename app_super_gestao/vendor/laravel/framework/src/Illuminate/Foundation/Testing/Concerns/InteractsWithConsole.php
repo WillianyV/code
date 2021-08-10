@@ -23,13 +23,6 @@ trait InteractsWithConsole
     public $expectedOutput = [];
 
     /**
-     * All of the expected ouput tables.
-     *
-     * @var array
-     */
-    public $expectedTables = [];
-
-    /**
      * All of the expected questions.
      *
      * @var array

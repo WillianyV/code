@@ -4,7 +4,6 @@ namespace Facade\Ignition\Solutions;
 
 use Facade\IgnitionContracts\RunnableSolution;
 use Illuminate\Support\Facades\Blade;
-use Illuminate\Support\Str;
 
 class MakeViewVariableOptionalSolution implements RunnableSolution
 {
@@ -32,6 +31,7 @@ class MakeViewVariableOptionalSolution implements RunnableSolution
 
     public function getSolutionActionDescription(): string
     {
+        $path = str_replace(base_path().'/', '', $this->viewFile);
         $output = [
             'Make the variable optional in the blade template.',
             "Replace `{{ $$this->variableName }}` with `{{ $$this->variableName ?? '' }}`",
@@ -71,24 +71,8 @@ class MakeViewVariableOptionalSolution implements RunnableSolution
         }
     }
 
-    protected function isSafePath(string $path): bool
-    {
-        if (! Str::startsWith($path, ['/', './'])) {
-            return false;
-        }
-        if (! Str::endsWith($path, '.blade.php')) {
-            return false;
-        }
-
-        return true;
-    }
-
     public function makeOptional(array $parameters = [])
     {
-        if (! $this->isSafePath($parameters['viewFile'])) {
-            return false;
-        }
-
         $originalContents = file_get_contents($parameters['viewFile']);
         $newContents = str_replace('$'.$parameters['variableName'], '$'.$parameters['variableName']." ?? ''", $originalContents);
 
@@ -107,7 +91,7 @@ class MakeViewVariableOptionalSolution implements RunnableSolution
     protected function generateExpectedTokens(array $originalTokens, string $variableName): array
     {
         $expectedTokens = [];
-        foreach ($originalTokens as $token) {
+        foreach ($originalTokens as $key => $token) {
             $expectedTokens[] = $token;
             if ($token[0] === T_VARIABLE && $token[1] === '$'.$variableName) {
                 $expectedTokens[] = [T_WHITESPACE, ' ', $token[2]];

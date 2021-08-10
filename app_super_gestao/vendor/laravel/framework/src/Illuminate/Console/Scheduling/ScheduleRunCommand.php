@@ -3,7 +3,6 @@
 namespace Illuminate\Console\Scheduling;
 
 use Illuminate\Console\Command;
-use Illuminate\Console\Events\ScheduledTaskFailed;
 use Illuminate\Console\Events\ScheduledTaskFinished;
 use Illuminate\Console\Events\ScheduledTaskSkipped;
 use Illuminate\Console\Events\ScheduledTaskStarting;
@@ -149,8 +148,6 @@ class ScheduleRunCommand extends Command
 
             $this->eventsRan = true;
         } catch (Throwable $e) {
-            $this->dispatcher->dispatch(new ScheduledTaskFailed($event, $e));
-
             $this->handler->report($e);
         }
     }

@@ -256,7 +256,7 @@ trait HasRelationships
         // If the type value is null it is probably safe to assume we're eager loading
         // the relationship. In this case we'll just pass in a dummy query where we
         // need to remove any eager loads that may already be defined on a model.
-        return is_null($class = $this->{$type}) || $class === ''
+        return empty($class = $this->{$type})
                     ? $this->morphEagerTo($name, $type, $id, $ownerKey)
                     : $this->morphInstanceTo($class, $name, $type, $id, $ownerKey);
     }
@@ -682,7 +682,7 @@ trait HasRelationships
      */
     public function touches($relation)
     {
-        return in_array($relation, $this->getTouchedRelations());
+        return in_array($relation, $this->touches);
     }
 
     /**
@@ -692,7 +692,7 @@ trait HasRelationships
      */
     public function touchOwners()
     {
-        foreach ($this->getTouchedRelations() as $relation) {
+        foreach ($this->touches as $relation) {
             $this->$relation()->touch();
 
             if ($this->$relation instanceof self) {

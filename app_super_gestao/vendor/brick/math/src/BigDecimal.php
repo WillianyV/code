@@ -96,10 +96,7 @@ final class BigDecimal extends BigNumber
      */
     public static function zero() : BigDecimal
     {
-        /**
-         * @psalm-suppress ImpureStaticVariable
-         * @var BigDecimal|null $zero
-         */
+        /** @psalm-suppress ImpureStaticVariable */
         static $zero;
 
         if ($zero === null) {
@@ -118,10 +115,7 @@ final class BigDecimal extends BigNumber
      */
     public static function one() : BigDecimal
     {
-        /**
-         * @psalm-suppress ImpureStaticVariable
-         * @var BigDecimal|null $one
-         */
+        /** @psalm-suppress ImpureStaticVariable */
         static $one;
 
         if ($one === null) {
@@ -140,10 +134,7 @@ final class BigDecimal extends BigNumber
      */
     public static function ten() : BigDecimal
     {
-        /**
-         * @psalm-suppress ImpureStaticVariable
-         * @var BigDecimal|null $ten
-         */
+        /** @psalm-suppress ImpureStaticVariable */
         static $ten;
 
         if ($ten === null) {
@@ -298,7 +289,7 @@ final class BigDecimal extends BigNumber
             throw DivisionByZeroException::divisionByZero();
         }
 
-        [, $b] = $this->scaleValues($this, $that);
+        [$a, $b] = $this->scaleValues($this, $that);
 
         $d = \rtrim($b, '0');
         $scale = \strlen($b) - \strlen($d);
@@ -686,7 +677,11 @@ final class BigDecimal extends BigNumber
      */
     public function toBigInteger() : BigInteger
     {
-        $zeroScaleDecimal = $this->scale === 0 ? $this : $this->dividedBy(1, 0);
+        if ($this->scale === 0) {
+            $zeroScaleDecimal = $this;
+        } else {
+            $zeroScaleDecimal = $this->dividedBy(1, 0);
+        }
 
         return BigInteger::create($zeroScaleDecimal->value);
     }
@@ -768,7 +763,6 @@ final class BigDecimal extends BigNumber
      * This method is only here to implement interface Serializable and cannot be accessed directly.
      *
      * @internal
-     * @psalm-suppress RedundantPropertyInitializationCheck
      *
      * @param string $value
      *

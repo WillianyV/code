@@ -9,9 +9,6 @@
  */
 namespace PHPUnit\Framework\MockObject;
 
-use function assert;
-use function implode;
-use function sprintf;
 use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\MockObject\Rule\AnyInvokedCount;
 use PHPUnit\Framework\MockObject\Rule\AnyParameters;
@@ -103,15 +100,14 @@ final class Matcher
     }
 
     /**
-     * @throws ExpectationFailedException
-     * @throws MatchBuilderNotFoundException
-     * @throws MethodNameNotConfiguredException
+     * @throws \Exception
      * @throws RuntimeException
+     * @throws ExpectationFailedException
      */
     public function invoked(Invocation $invocation)
     {
         if ($this->methodNameRule === null) {
-            throw new MethodNameNotConfiguredException;
+            throw new RuntimeException('No method rule is set');
         }
 
         if ($this->afterMatchBuilderId !== null) {
@@ -120,10 +116,14 @@ final class Matcher
                                   ->lookupMatcher($this->afterMatchBuilderId);
 
             if (!$matcher) {
-                throw new MatchBuilderNotFoundException($this->afterMatchBuilderId);
+                throw new RuntimeException(
+                    \sprintf(
+                        'No builder found for match builder identification <%s>',
+                        $this->afterMatchBuilderId
+                    )
+                );
             }
-
-            assert($matcher instanceof self);
+            \assert($matcher instanceof self);
 
             if ($matcher->invocationRule->hasBeenInvoked()) {
                 $this->afterMatchBuilderIsInvoked = true;
@@ -138,7 +138,7 @@ final class Matcher
             }
         } catch (ExpectationFailedException $e) {
             throw new ExpectationFailedException(
-                sprintf(
+                \sprintf(
                     "Expectation failed for %s when %s\n%s",
                     $this->methodNameRule->toString(),
                     $this->invocationRule->toString(),
@@ -156,11 +156,9 @@ final class Matcher
     }
 
     /**
-     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
-     * @throws ExpectationFailedException
-     * @throws MatchBuilderNotFoundException
-     * @throws MethodNameNotConfiguredException
      * @throws RuntimeException
+     * @throws ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function matches(Invocation $invocation): bool
     {
@@ -170,10 +168,14 @@ final class Matcher
                                   ->lookupMatcher($this->afterMatchBuilderId);
 
             if (!$matcher) {
-                throw new MatchBuilderNotFoundException($this->afterMatchBuilderId);
+                throw new RuntimeException(
+                    \sprintf(
+                        'No builder found for match builder identification <%s>',
+                        $this->afterMatchBuilderId
+                    )
+                );
             }
-
-            assert($matcher instanceof self);
+            \assert($matcher instanceof self);
 
             if (!$matcher->invocationRule->hasBeenInvoked()) {
                 return false;
@@ -181,7 +183,7 @@ final class Matcher
         }
 
         if ($this->methodNameRule === null) {
-            throw new MethodNameNotConfiguredException;
+            throw new RuntimeException('No method rule is set');
         }
 
         if (!$this->invocationRule->matches($invocation)) {
@@ -194,7 +196,7 @@ final class Matcher
             }
         } catch (ExpectationFailedException $e) {
             throw new ExpectationFailedException(
-                sprintf(
+                \sprintf(
                     "Expectation failed for %s when %s\n%s",
                     $this->methodNameRule->toString(),
                     $this->invocationRule->toString(),
@@ -208,14 +210,14 @@ final class Matcher
     }
 
     /**
-     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
+     * @throws RuntimeException
      * @throws ExpectationFailedException
-     * @throws MethodNameNotConfiguredException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      */
     public function verify(): void
     {
         if ($this->methodNameRule === null) {
-            throw new MethodNameNotConfiguredException;
+            throw new RuntimeException('No method rule is set');
         }
 
         try {
@@ -233,7 +235,7 @@ final class Matcher
             }
         } catch (ExpectationFailedException $e) {
             throw new ExpectationFailedException(
-                sprintf(
+                \sprintf(
                     "Expectation failed for %s when %s.\n%s",
                     $this->methodNameRule->toString(),
                     $this->invocationRule->toString(),
@@ -267,6 +269,6 @@ final class Matcher
             $list[] = 'will ' . $this->stub->toString();
         }
 
-        return implode(' ', $list);
+        return \implode(' ', $list);
     }
 }

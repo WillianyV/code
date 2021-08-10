@@ -22,9 +22,7 @@ trait CarbonTypeConverter
 
     public function getSQLDeclaration(array $fieldDeclaration, AbstractPlatform $platform)
     {
-        $precision = ($fieldDeclaration['precision'] ?: 10) === 10
-            ? DateTimeDefaultPrecision::get()
-            : $fieldDeclaration['precision'];
+        $precision = $fieldDeclaration['precision'] ?: DateTimeDefaultPrecision::get();
         $type = parent::getSQLDeclaration($fieldDeclaration, $platform);
 
         if (!$precision) {
@@ -35,7 +33,7 @@ trait CarbonTypeConverter
             return preg_replace('/\(\d+\)/', "($precision)", $type);
         }
 
-        [$before, $after] = explode(' ', "$type ");
+        list($before, $after) = explode(' ', "$type ");
 
         return trim("$before($precision) $after");
     }

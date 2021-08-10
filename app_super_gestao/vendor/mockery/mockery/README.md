@@ -276,7 +276,7 @@ versioning scheme.
 
 ### Alternative Runtimes
 
-Mockery 1.3 was the last version to support HHVM 3 and PHP 5. There is no support for HHVM 4+.
+Mockery will attempt to continue support HHVM, but will not make any guarantees.
 
 ## A new home for Mockery
 

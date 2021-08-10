@@ -6,7 +6,6 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\CookieJar;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\HandlerStack;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
 
@@ -34,13 +33,6 @@ class PendingRequest
      * @var string
      */
     protected $bodyFormat;
-
-    /**
-     * The raw body for the request.
-     *
-     * @var string
-     */
-    protected $pendingBody;
 
     /**
      * The pending files for the request.
@@ -87,7 +79,7 @@ class PendingRequest
     /**
      * The callbacks that should execute before the request is sent.
      *
-     * @var \Illuminate\Support\Collection
+     * @var array
      */
     protected $beforeSendingCallbacks;
 
@@ -99,13 +91,6 @@ class PendingRequest
     protected $stubCallbacks;
 
     /**
-     * The middleware callables added by users that will handle requests.
-     *
-     * @var \Illuminate\Support\Collection
-     */
-    protected $middleware;
-
-    /**
      * Create a new HTTP Client instance.
      *
      * @param  \Illuminate\Http\Client\Factory|null  $factory
@@ -114,7 +99,6 @@ class PendingRequest
     public function __construct(Factory $factory = null)
     {
         $this->factory = $factory;
-        $this->middleware = new Collection;
 
         $this->asJson();
 
@@ -136,24 +120,6 @@ class PendingRequest
     public function baseUrl(string $url)
     {
         $this->baseUrl = $url;
-
-        return $this;
-    }
-
-    /**
-     * Attach a raw body to the request.
-     *
-     * @param  resource|string  $content
-     * @param  string  $contentType
-     * @return $this
-     */
-    public function withBody($content, $contentType)
-    {
-        $this->bodyFormat('body');
-
-        $this->pendingBody = $content;
-
-        $this->contentType($contentType);
 
         return $this;
     }
@@ -354,19 +320,6 @@ class PendingRequest
     }
 
     /**
-     * Specify the path where the body of the response should be stored.
-     *
-     * @param  string|resource  $to
-     * @return $this
-     */
-    public function sink($to)
-    {
-        return tap($this, function ($request) use ($to) {
-            return $this->options['sink'] = $to;
-        });
-    }
-
-    /**
      * Specify the timeout (in seconds) for the request.
      *
      * @param  int  $seconds
@@ -405,19 +358,6 @@ class PendingRequest
         return tap($this, function ($request) use ($options) {
             return $this->options = array_merge_recursive($this->options, $options);
         });
-    }
-
-    /**
-     * Add new middleware the client handler stack.
-     *
-     * @param  callable  $middleware
-     * @return $this
-     */
-    public function withMiddleware(callable $middleware)
-    {
-        $this->middleware->push($middleware);
-
-        return $this;
     }
 
     /**
@@ -534,18 +474,14 @@ class PendingRequest
         if (isset($options[$this->bodyFormat])) {
             if ($this->bodyFormat === 'multipart') {
                 $options[$this->bodyFormat] = $this->parseMultipartBodyFormat($options[$this->bodyFormat]);
-            } elseif ($this->bodyFormat === 'body') {
-                $options[$this->bodyFormat] = $this->pendingBody;
             }
 
-            if (is_array($options[$this->bodyFormat])) {
-                $options[$this->bodyFormat] = array_merge(
-                    $options[$this->bodyFormat], $this->pendingFiles
-                );
-            }
+            $options[$this->bodyFormat] = array_merge(
+                $options[$this->bodyFormat], $this->pendingFiles
+            );
         }
 
-        [$this->pendingBody, $this->pendingFiles] = [null, []];
+        $this->pendingFiles = [];
 
         return retry($this->tries ?? 1, function () use ($method, $url, $options) {
             try {
@@ -634,10 +570,6 @@ class PendingRequest
             $stack->push($this->buildBeforeSendingHandler());
             $stack->push($this->buildRecorderHandler());
             $stack->push($this->buildStubHandler());
-
-            $this->middleware->each(function ($middleware) use ($stack) {
-                $stack->push($middleware);
-            });
         });
     }
 
@@ -695,40 +627,12 @@ class PendingRequest
 
                 if (is_null($response)) {
                     return $handler($request, $options);
-                }
-
-                $response = is_array($response) ? Factory::response($response) : $response;
-
-                $sink = $options['sink'] ?? null;
-
-                if ($sink) {
-                    $response->then($this->sinkStubHandler($sink));
+                } elseif (is_array($response)) {
+                    return Factory::response($response);
                 }
 
                 return $response;
             };
-        };
-    }
-
-    /**
-     * Get the sink stub handler callback.
-     *
-     * @param  string  $sink
-     * @return \Closure
-     */
-    protected function sinkStubHandler($sink)
-    {
-        return function ($response) use ($sink) {
-            $body = $response->getBody()->getContents();
-
-            if (is_string($sink)) {
-                file_put_contents($sink, $body);
-
-                return;
-            }
-
-            fwrite($sink, $body);
-            rewind($sink);
         };
     }
 
